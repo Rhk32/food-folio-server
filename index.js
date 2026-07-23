@@ -7,10 +7,14 @@ app.use(cors());
 app.use(express.json());
 const port = process.env.PORT || 5000;
 
-app.get('/', (req, res) => {
-    res.send('Hello World!');
+// db => database
+// pgp => pg-promise module
+const {db, pgp} = require('./config/dbConfig');
+
+app.get('/', async (req, res) => {
+    res.send(crypto.randomUUID());
 });
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+    console.log(`Food Folio listening on port ${port}`);
 });
