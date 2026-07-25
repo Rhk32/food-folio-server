@@ -11,7 +11,6 @@ const port = process.env.PORT || 5000;
 // pgp => pg-promise module
 const { db, pgp } = require('./config/dbConfig');
 
-// rahik eta delete kor
 app.get('/', async (req, res) => {
     res.send(crypto.randomUUID());
 });
