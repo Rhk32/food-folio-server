@@ -12,7 +12,6 @@ const port = process.env.PORT || 5000;
 const { db, pgp } = require('./config/dbConfig');
 
 app.get('/', async (req, res) => {
-    console.log("HIIII");
     res.send(crypto.randomUUID());
 });
 
