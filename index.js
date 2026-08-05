@@ -9,7 +9,7 @@ const port = process.env.PORT || 5000;
 
 // db => database
 // pgp => pg-promise module
-const { db, pgp } = require('./config/dbConfig');
+const { db, pgp, testConnection } = require('./config/dbConfig');
 
 app.get('/', async (req, res) => {
     res.send(crypto.randomUUID());
@@ -17,4 +17,5 @@ app.get('/', async (req, res) => {
 
 app.listen(port, () => {
     console.log(`Food Folio listening on port ${port}`);
+    testConnection();
 });
