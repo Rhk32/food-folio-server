@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
 
@@ -9,13 +9,14 @@ const port = process.env.PORT || 5000;
 
 // db => database
 // pgp => pg-promise module
-const { db, pgp } = require('./config/dbConfig');
+const { db, pgp, testConnection } = require("./config/dbConfig");
 
 app.get('/', async (req, res) => {
-    console.log("HIIII");
-    res.send(crypto.randomUUID());
+    const data = await db.manyOrNone(`SELECT * FROM dummyUsers`);
+    res.json(data);
 });
 
 app.listen(port, () => {
-    console.log(`Food Folio listening on port ${port}`);
+  console.log(`Food Folio listening on port ${port}`);
+  testConnection();
 });
