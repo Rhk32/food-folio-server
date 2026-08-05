@@ -12,7 +12,7 @@ const port = process.env.PORT || 5000;
 const { db, pgp, testConnection } = require('./config/dbConfig');
 
 app.get('/', async (req, res) => {
-    res.send(crypto.randomUUID());
+    res.json(crypto.randomUUID());
 });
 
 app.listen(port, () => {
