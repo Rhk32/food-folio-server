@@ -12,7 +12,8 @@ const port = process.env.PORT || 5000;
 const { db, pgp, testConnection } = require('./config/dbConfig');
 
 app.get('/', async (req, res) => {
-    res.json(crypto.randomUUID());
+    const data = await db.manyOrNone(`SELECT * FROM dummyUsers`);
+    res.json(data);
 });
 
 app.listen(port, () => {
