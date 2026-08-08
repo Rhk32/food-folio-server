@@ -14,11 +14,42 @@ const searchUserByEmail = async (email) => {
 const createUser = async (userData) => {
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(userData.password, salt);
-    console.log(userData);
-    console.log(hashPassword);
-    return {
-        message: 'Success'
-    };
+
+    await db.none(
+        `
+        INSERT INTO users (
+            name,
+            email,
+            profile_picture_url,
+            current_city,
+            current_country,
+            location,
+            password
+        )
+        VALUES (
+            $1,
+            $2,
+            $3,
+            $4,
+            $5,
+            ST_SetSRID(
+                ST_MakePoint($6, $7),
+                4326
+            ),
+            $8
+        )
+        `,
+        [
+            userData.name,
+            userData.email,
+            userData.profile_picture_url,
+            userData.current_city,
+            userData.current_country,
+            userData.longitude,
+            userData.latitude,
+            hashPassword
+        ]
+    );
 };
 
 module.exports = { searchUserByEmail, createUser };

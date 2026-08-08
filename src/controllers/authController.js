@@ -12,9 +12,9 @@ const userSignUp = async (req, res) => {
             });
         }
 
-        const response = await createUser(userData);
+        await createUser(userData);
 
-        res.status(201).json(response);
+        res.status(201).json({ message: 'User created successfully' });
 
     } catch (error) {
         console.error(error);
