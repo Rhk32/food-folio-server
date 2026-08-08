@@ -8,6 +8,7 @@ create table public.users (
   current_country text null,
   location geography null,
   password text not null,
+  role text not null default 'user'::text,
   constraint users_pkey1 primary key (id),
   constraint users_email_key unique (email)
 ) TABLESPACE pg_default;
