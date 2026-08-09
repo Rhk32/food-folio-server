@@ -3,6 +3,7 @@ const cors = require('cors');
 
 const serverHealthRoute = require('./routes/serverHealthRoute');
 const authRoute = require('./routes/authRoute');
+const userRoute = require('./routes/userRoute');
 
 const app = express();
 
@@ -14,5 +15,6 @@ app.use('/', serverHealthRoute);
 
 // authentication APIs
 app.use('/api/auth', authRoute);
+app.use('/api/users', userRoute)
 
 module.exports = app;

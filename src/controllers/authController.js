@@ -1,4 +1,4 @@
-const { searchUserByEmail, createUser, checkPassword } = require('../services/authService');
+const { searchUserByEmail, createUser, checkPassword, createToken } = require('../services/authService');
 
 const userSignUp = async (req, res) => {
     try {
@@ -41,8 +41,12 @@ const userLogIn = async (req, res) => {
         const isMatched = await checkPassword(data.password, existingUser.password);
 
         if (isMatched) {
+            const token = await createToken(existingUser);
+            // console.log(token);
+
             return res.status(200).json({
-                message: 'Login Succesful'
+                message: 'Login Succesful',
+                token
             });
         } else {
             return res.status(401).json({

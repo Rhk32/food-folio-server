@@ -1,9 +1,10 @@
 const bcrypt = require('bcryptjs');
 const { db } = require('../config/dbConfig');
+const { SignJWT } = require('jose');
 
 const searchUserByEmail = async (email) => {
     return db.oneOrNone(`
-        SELECT password
+        SELECT id, password
         FROM users
         WHERE email = $1
         `,
@@ -56,4 +57,19 @@ const checkPassword = async (password, hash) => {
     return await bcrypt.compare(password, hash);
 };
 
-module.exports = { searchUserByEmail, createUser, checkPassword };
+const createToken = async (user) => {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    // console.log(secret);
+
+    const token = await new SignJWT({
+        userId: user.id
+    })
+    .setProtectedHeader({alg: 'HS256'})
+    .setIssuedAt()
+    .setExpirationTime('1d')
+    .sign(secret);
+
+    return token;
+};
+
+module.exports = { searchUserByEmail, createUser, checkPassword, createToken };
