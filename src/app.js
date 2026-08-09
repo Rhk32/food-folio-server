@@ -9,10 +9,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// health api
+// health APIs
 app.use('/', serverHealthRoute);
 
-// authentication api
+// authentication APIs
 app.use('/api/auth', authRoute);
 
 module.exports = app;

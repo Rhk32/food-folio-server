@@ -3,7 +3,7 @@ const { db } = require('../config/dbConfig');
 
 const searchUserByEmail = async (email) => {
     return db.oneOrNone(`
-        SELECT id, name, email, password
+        SELECT password
         FROM users
         WHERE email = $1
         `,
@@ -52,4 +52,8 @@ const createUser = async (userData) => {
     );
 };
 
-module.exports = { searchUserByEmail, createUser };
+const checkPassword = async (password, hash) => {
+    return await bcrypt.compare(password, hash);
+};
+
+module.exports = { searchUserByEmail, createUser, checkPassword };
