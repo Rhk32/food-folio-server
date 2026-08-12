@@ -22,4 +22,35 @@ const getUserRestaurantsByUserID = async (userId) => {
     }
 };
 
-module.exports = { getUserRestaurantsByUserID };
+const postRestaurantByUserIdAndRestaurantManager = async (userId, name, description, logoUrl) => {
+    try {
+        return await db.tx(async (t) => {
+            // 1. Create the restaurant
+            const restaurant = await t.one(
+                `
+                INSERT INTO restaurants (name, description, logo_url)
+                VALUES ($1, $2, $3)
+                RETURNING *
+                `,
+                [name, description, logoUrl]
+            );
+
+            // 2. Create the relationship between the user and restaurant
+            await t.none(
+                `
+                INSERT INTO restaurant_manager (user_id, restaurant_id)
+                VALUES ($1, $2)
+                `,
+                [userId, restaurant.id]
+            );
+
+            // 3. Return the newly created restaurant
+            return restaurant;
+        });
+    } catch (error) {
+        console.error('Error creating restaurant:', error);
+        throw error;
+    }
+};
+
+module.exports = { getUserRestaurantsByUserID, postRestaurantByUserIdAndRestaurantManager };
