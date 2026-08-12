@@ -4,6 +4,7 @@ const cors = require('cors');
 const serverHealthRoute = require('./routes/serverHealthRoute');
 const authRoute = require('./routes/authRoute');
 const userRoute = require('./routes/userRoute');
+const restaurantRoute = require('./routes/restaurantRoute');
 
 const app = express();
 
@@ -16,5 +17,8 @@ app.use('/', serverHealthRoute);
 // authentication APIs
 app.use('/api/auth', authRoute);
 app.use('/api/users', userRoute)
+
+// restaurant APIs
+app.use('/api/restaurant', restaurantRoute);
 
 module.exports = app;
