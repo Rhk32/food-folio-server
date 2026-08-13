@@ -6,7 +6,6 @@ create table public.gallery_image (
   user_id uuid not null,
   review_id uuid null,
   image_url text not null,
-  is_approved boolean not null,
   constraint gallery_image_pkey primary key (id),
   constraint gallery_image_branch_id_fkey foreign KEY (branch_id) references branches (id) on update CASCADE on delete CASCADE,
   constraint gallery_image_restaurant_id_fkey foreign KEY (restaurant_id) references restaurants (id) on update CASCADE on delete CASCADE,

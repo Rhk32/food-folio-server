@@ -18,6 +18,7 @@ const authenticateUser = async (req, res, next) => {
         const secret = new TextEncoder().encode(process.env.JWT_SECRET);
         const { payload } = await jwtVerify(token, secret);
         req.user = payload;
+        // console.log(payload);
 
         next();
     } catch (error) {
