@@ -16,6 +16,8 @@ app.use('/', serverHealthRoute);
 
 // authentication APIs
 app.use('/api/auth', authRoute);
+
+// user related APIs
 app.use('/api/users', userRoute)
 
 // restaurant APIs
