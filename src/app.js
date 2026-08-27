@@ -23,4 +23,7 @@ app.use('/api/users', userRoute)
 // restaurant APIs
 app.use('/api/restaurant', restaurantRoute);
 
+// feed APIs
+app.use('/api/feed', feedRoute);
+
 module.exports = app;
