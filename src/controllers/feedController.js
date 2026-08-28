@@ -2,13 +2,14 @@ const feedService = require('../services/feedService');
 
 const getFeedData = async (req, res) => {
     try {
-        const { lat, lng, city, country } = req.query;
+        const { lat, lng, city, country, radius } = req.query;
+        const rad = (parseInt(radius) || 10) * 1000;
 
         let reviews = [];
 
         // if location access given
         if (lat && lng) {
-            reviews = await feedService.getReviewsByRadius(lat, lng);
+            reviews = await feedService.getReviewsByRadius(lat, lng, rad);
         } 
         // if no location given
         else if (city) {

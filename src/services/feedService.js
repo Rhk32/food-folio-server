@@ -21,14 +21,14 @@ const getReviewsByRadius = async (lat, lng) => {
         WHERE ST_DWithin(
             b.coordinates, 
             ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, 
-            10000
+            $3
         )
         ORDER BY r.created_at DESC
         LIMIT 50;
     `;
 
   // $1 = lng, $2 = lat
-    return await db.any(query, [lng, lat]);
+    return await db.any(query, [lng, lat, rad]);
 };
 
 const getReviewsByCity = async (city) => {
