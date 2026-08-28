@@ -5,6 +5,7 @@ const serverHealthRoute = require('./routes/serverHealthRoute');
 const authRoute = require('./routes/authRoute');
 const userRoute = require('./routes/userRoute');
 const restaurantRoute = require('./routes/restaurantRoute');
+const feedRoute = require('./routes/feedRoute');
 
 const app = express();
 
