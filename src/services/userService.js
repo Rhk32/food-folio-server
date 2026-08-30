@@ -10,7 +10,8 @@ const getUserById = async (id) => {
             profile_picture_url,
             current_city,
             current_country,
-            role
+            role,
+            bio
         FROM users
         WHERE id = $1
         `,

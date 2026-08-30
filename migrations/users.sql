@@ -9,6 +9,7 @@ create table public.users (
   location geography null,
   password text not null,
   role text not null default 'user'::text,
+  bio text null default ''::text,
   constraint users_pkey1 primary key (id),
   constraint users_email_key unique (email)
 ) TABLESPACE pg_default;
