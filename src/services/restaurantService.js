@@ -53,4 +53,79 @@ const postRestaurantByUserIdAndRestaurantManager = async (userId, name, descript
     }
 };
 
-module.exports = { getUserRestaurantsByUserID, postRestaurantByUserIdAndRestaurantManager };
+const getUnapprovedRestaurantsService = async () => {
+    try {
+        const restaurants = await db.manyOrNone(
+            `
+            SELECT *
+            FROM restaurants
+            WHERE approval_status = $1
+            ORDER BY created_at DESC
+            `,
+            ['pending']
+        );
+
+        return restaurants;
+    } catch (error) {
+        console.error('Error fetching unapproved restaurants:', error);
+        throw error;
+    }
+};
+
+const updateRestaurantApprovalService = async (restaurantId, approvalStatus) => {
+    try {
+        const restaurant = await db.oneOrNone(
+            `
+            UPDATE restaurants
+            SET approval_status = $1
+            WHERE id = $2
+            RETURNING *
+            `,
+            [approvalStatus, restaurantId]
+        );
+
+        return restaurant;
+    } catch (error) {
+        console.error('Error updating restaurant approval:', error);
+        throw error;
+    }
+};
+
+const getRestaurantByRestaurantIdService = async (restaurantId) => {
+    try {
+        const restaurant = await db.oneOrNone(
+            `
+            SELECT *
+            FROM restaurants
+            WHERE id = $1
+            `,
+            [restaurantId]
+        );
+
+        return restaurant;
+    } catch (error) {
+        console.error('Error fetching restaurant by ID:', error);
+        throw error;
+    }
+};
+
+const checkRestaurantManagerService = async (userId, restaurantId) => {
+    try {
+        const manager = await db.oneOrNone(
+            `
+            SELECT 1
+            FROM restaurant_manager
+            WHERE user_id = $1
+              AND restaurant_id = $2
+            `,
+            [userId, restaurantId]
+        );
+
+        return !!manager;
+    } catch (error) {
+        console.error('Error checking restaurant manager:', error);
+        throw error;
+    }
+};
+
+module.exports = { getUserRestaurantsByUserID, postRestaurantByUserIdAndRestaurantManager, getUnapprovedRestaurantsService, updateRestaurantApprovalService, getRestaurantByRestaurantIdService, checkRestaurantManagerService };
