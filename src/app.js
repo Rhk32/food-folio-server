@@ -8,6 +8,7 @@ const restaurantRoute = require('./routes/restaurantRoute');
 const branchRoute = require('./routes/branchRoute');
 const followRoute = require('./routes/followRoute');
 const menuRoute = require('./routes/menuRoute');
+const cuisineRoute = require('./routes/cuisineRoute');
 
 const app = express();
 
@@ -34,4 +35,8 @@ app.use('/api/follow', followRoute);
 
 // menu APIs
 app.use('/api/menu', menuRoute);
+
+// cuisine APIs
+app.use('/api/cuisine', cuisineRoute);
+
 module.exports = app;
