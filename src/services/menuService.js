@@ -60,4 +60,27 @@ const createMenuItemService = async ({ branchId, name, description, price }) => 
     }
 };
 
-module.exports = { getMenuItemsByBranchIdService, createMenuItemService };
+const getMenuItemByMenuItemIdService = async (menuItemId) => {
+    try {
+        const menuItem = await db.oneOrNone(
+            `
+            SELECT
+                id,
+                branch_id,
+                name,
+                description,
+                price
+            FROM menu_item
+            WHERE id = $1
+            `,
+            [menuItemId]
+        );
+
+        return menuItem;
+    } catch (error) {
+        console.error('Error fetching menu item:', error);
+        throw error;
+    }
+};
+
+module.exports = { getMenuItemsByBranchIdService, createMenuItemService, getMenuItemByMenuItemIdService };

@@ -1,4 +1,4 @@
-const { getMenuItemsByBranchIdService, createMenuItemService } = require("../services/menuService");
+const { getMenuItemsByBranchIdService, createMenuItemService, getMenuItemByMenuItemIdService } = require("../services/menuService");
 const { checkRestaurantManagerByBranchIdService } = require("../services/restaurantService");
 
 const getMenuItemsByBranchId = async (req, res) => {
@@ -88,4 +88,38 @@ const createMenuItem = async (req, res) => {
     }
 };
 
-module.exports = { getMenuItemsByBranchId, createMenuItem };
+const getMenuItemByMenuItemId = async (req, res) => {
+    try {
+        const { menuItemId } = req.params;
+
+        if (!menuItemId) {
+            return res.status(400).json({
+                message: 'Menu item ID is required',
+            });
+        }
+
+        const menuItem =
+            await getMenuItemByMenuItemIdService(menuItemId);
+
+        if (!menuItem) {
+            return res.status(404).json({
+                message: 'Menu item not found',
+            });
+        }
+
+        return res.status(200).json({
+            menuItem,
+        });
+    } catch (error) {
+        console.error(
+            'Error in getMenuItemByMenuItemId:',
+            error
+        );
+
+        return res.status(500).json({
+            message: 'Failed to fetch menu item',
+        });
+    }
+};
+
+module.exports = { getMenuItemsByBranchId, createMenuItem, getMenuItemByMenuItemId };
