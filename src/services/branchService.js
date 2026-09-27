@@ -62,4 +62,28 @@ const createBranchService = async ({ restaurantId, branchName, address, city, la
     }
 };
 
-module.exports = { getBranchesByRestaurantIdService, createBranchService };
+const getBranchByBranchIdService = async (branchId) => {
+    try {
+        return await db.oneOrNone(
+            `
+            SELECT
+                id,
+                restaurant_id,
+                branch_name,
+                address,
+                city,
+                google_maps_url,
+                ST_Y(coordinates::geometry) AS latitude,
+                ST_X(coordinates::geometry) AS longitude
+            FROM branches
+            WHERE id = $1
+            `,
+            [branchId]
+        );
+    } catch (error) {
+        console.error('Error fetching branch:', error);
+        throw error;
+    }
+};
+
+module.exports = { getBranchesByRestaurantIdService, createBranchService, getBranchByBranchIdService };

@@ -1,5 +1,5 @@
 const { parseGoogleMapsUrl, unfurlGoogleMapsUrl } = require("google-maps-link-parser");
-const { getBranchesByRestaurantIdService, createBranchService } = require("../services/branchService");
+const { getBranchesByRestaurantIdService, createBranchService, getBranchByBranchIdService } = require("../services/branchService");
 const { checkRestaurantManagerService } = require("../services/restaurantService");
 
 const getBranchesByRestaurantId = async (req, res) => {
@@ -124,4 +124,34 @@ const createBranch = async (req, res) => {
     }
 };
 
-module.exports = { getBranchesByRestaurantId, createBranch };
+const getBranchByBranchId = async (req, res) => {
+    try {
+        const { branchId } = req.params;
+
+        if (!branchId) {
+            return res.status(400).json({
+                message: 'Branch ID is required',
+            });
+        }
+
+        const branch = await getBranchByBranchIdService(branchId);
+
+        if (!branch) {
+            return res.status(404).json({
+                message: 'Branch not found',
+            });
+        }
+
+        return res.status(200).json({
+            branch,
+        });
+    } catch (error) {
+        console.error('Error in getBranchByBranchId:', error);
+
+        return res.status(500).json({
+            message: 'Failed to fetch branch',
+        });
+    }
+};
+
+module.exports = { getBranchesByRestaurantId, createBranch, getBranchByBranchId };
