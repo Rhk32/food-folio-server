@@ -128,4 +128,29 @@ const checkRestaurantManagerService = async (userId, restaurantId) => {
     }
 };
 
-module.exports = { getUserRestaurantsByUserID, postRestaurantByUserIdAndRestaurantManager, getUnapprovedRestaurantsService, updateRestaurantApprovalService, getRestaurantByRestaurantIdService, checkRestaurantManagerService };
+const checkRestaurantManagerByBranchIdService = async (userId, branchId) => {
+    try {
+        const manager = await db.oneOrNone(
+            `
+            SELECT 1
+            FROM restaurant_manager AS rm
+            INNER JOIN branches AS b
+                ON b.restaurant_id = rm.restaurant_id
+            WHERE rm.user_id = $1
+              AND b.id = $2
+            `,
+            [userId, branchId]
+        );
+
+        return !!manager;
+    } catch (error) {
+        console.error(
+            'Error checking branch manager:',
+            error
+        );
+
+        throw error;
+    }
+};
+
+module.exports = { getUserRestaurantsByUserID, postRestaurantByUserIdAndRestaurantManager, getUnapprovedRestaurantsService, updateRestaurantApprovalService, getRestaurantByRestaurantIdService, checkRestaurantManagerService, checkRestaurantManagerByBranchIdService };
