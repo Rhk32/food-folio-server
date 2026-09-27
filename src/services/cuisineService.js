@@ -21,4 +21,56 @@ const getCuisinesByRestaurantIdService = async (restaurantId) => {
     }
 };
 
-module.exports = { getCuisinesByRestaurantIdService };
+const postCuisineByRestaurantIdService = async (restaurantId, name) => {
+    try {
+        return await db.tx(async (t) => {
+            const cuisine = await t.oneOrNone(
+                `
+                SELECT id, name
+                FROM cuisine
+                WHERE LOWER(name) = LOWER($1)
+                `,
+                [name.trim()]
+            );
+
+            if (!cuisine) {
+                return {
+                    status: 'not_found',
+                };
+            }
+
+            const restaurantCuisine = await t.oneOrNone(
+                `
+                INSERT INTO restaurant_cuisine (
+                    restaurant_id,
+                    cuisine_id
+                )
+                VALUES ($1, $2)
+                ON CONFLICT (restaurant_id, cuisine_id)
+                DO NOTHING
+                RETURNING restaurant_id, cuisine_id
+                `,
+                [restaurantId, cuisine.id]
+            );
+
+            if (!restaurantCuisine) {
+                return {
+                    status: 'already_exists',
+                };
+            }
+
+            return {
+                status: 'created',
+                restaurantCuisine: {
+                    ...restaurantCuisine,
+                    name: cuisine.name,
+                },
+            };
+        });
+    } catch (error) {
+        console.error('Error adding cuisine to restaurant:', error);
+        throw error;
+    }
+};
+
+module.exports = { getCuisinesByRestaurantIdService, postCuisineByRestaurantIdService };
