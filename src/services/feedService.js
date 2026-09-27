@@ -1,6 +1,8 @@
 const { db } = require("../config/dbConfig");
 
-const getReviewsByRadius = async (lat, lng, rad, search) => {
+const getReviewsByRadius = async (lat, lng, rad, search, page = 1, limit = 5) => {
+    const offset = (page - 1) * limit;
+
     let query = `
         SELECT 
             r.id AS review_id, 
@@ -26,19 +28,24 @@ const getReviewsByRadius = async (lat, lng, rad, search) => {
     `;
 
     const params = [lng, lat, rad];
+    let paramCounter = 4;
 
     if (search) {
         query += ` AND rest.name ILIKE $4`;
-        params.push(`%${search}%`);           
+        params.push(`%${search}%`);   
+        paramCounter++;        
     }
 
-    query += ` ORDER BY r.created_at DESC LIMIT 50;`;
+    query += ` ORDER BY r.created_at DESC LIMIT $${paramCounter} OFFSET $${paramCounter + 1};`;
+    params.push(limit, offset);
 
   // $1 = lng, $2 = lat, $3 = rad, $4 = search
     return await db.any(query, params);
 };
 
-const getReviewsByCity = async (city, search) => {
+const getReviewsByCity = async (city, search, page = 1, limit = 5) => {
+    const offset = (page - 1) * limit;
+
     let query = `
         SELECT 
             r.id AS review_id, 
@@ -59,13 +66,16 @@ const getReviewsByCity = async (city, search) => {
         WHERE b.city ILIKE $1
     `;
     const params = [city];
+    let paramCounter = 2;
 
     if (search) {
-        query += ` AND rest.name ILIKE $2`;
+        query += ` AND rest.name ILIKE $${paramCounter}`;
         params.push(`%${search}%`);
+        paramCounter++;
     }
 
-    query += ` ORDER BY r.created_at DESC LIMIT 50;`;
+    query += ` ORDER BY r.created_at DESC LIMIT $${paramCounter} OFFSET $${paramCounter + 1};`;
+    params.push(limit, offset);
     
     // $1 = city
     return await db.any(query, params);
