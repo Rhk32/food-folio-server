@@ -83,4 +83,26 @@ const getMenuItemByMenuItemIdService = async (menuItemId) => {
     }
 };
 
-module.exports = { getMenuItemsByBranchIdService, createMenuItemService, getMenuItemByMenuItemIdService };
+const updateMenuItemService = async (menuItemId, { name, description, price }) => {
+    try {
+        const menuItem = await db.oneOrNone(
+            `
+            UPDATE menu_item
+            SET
+                name = $1,
+                description = $2,
+                price = $3
+            WHERE id = $4
+            RETURNING *
+            `,
+            [name, description, price, menuItemId]
+        );
+
+        return menuItem;
+    } catch (error) {
+        console.error('Error updating menu item:', error);
+        throw error;
+    }
+};
+
+module.exports = { getMenuItemsByBranchIdService, createMenuItemService, getMenuItemByMenuItemIdService, updateMenuItemService };
