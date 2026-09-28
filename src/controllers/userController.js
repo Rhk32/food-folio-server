@@ -1,4 +1,4 @@
-const { getUserById, updateUserProfileInDb, updatePasswordService } = require("../services/userService");
+const { getUserById, getPublicUserById, updateUserProfileInDb, updatePasswordService } = require("../services/userService");
 
 const getCurrentUser = async (req, res) => {
     try {
@@ -27,10 +27,17 @@ const getProfileDisplayUserById = async (req, res) => {
         const userId = req.params.userId;
         // console.log(userId);
 
-        const user = await getUserById(userId);
+        const user = await getPublicUserById(userId);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
         // console.log(user);
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             user
         })

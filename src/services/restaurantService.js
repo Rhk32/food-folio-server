@@ -109,6 +109,72 @@ const getRestaurantByRestaurantIdService = async (restaurantId) => {
     }
 };
 
+const getPublicRestaurantByIdService = async (restaurantId) => {
+    return db.task(async (task) => {
+        const restaurant = await task.oneOrNone(
+            `
+            SELECT id, created_at, name, logo_url, description, visits
+            FROM restaurants
+            WHERE id = $1 AND approval_status = 'approved'
+            `,
+            [restaurantId]
+        );
+
+        if (!restaurant) return null;
+
+        const cuisines = await task.manyOrNone(
+                `
+                SELECT c.id, c.name
+                FROM restaurant_cuisine rc
+                INNER JOIN cuisine c ON c.id = rc.cuisine_id
+                WHERE rc.restaurant_id = $1
+                ORDER BY c.name ASC
+                `,
+                [restaurantId]
+            );
+        const branches = await task.manyOrNone(
+                `
+                SELECT
+                    b.id,
+                    b.branch_name,
+                    b.address,
+                    b.city,
+                    b.google_maps_url,
+                    ST_Y(b.coordinates::geometry) AS latitude,
+                    ST_X(b.coordinates::geometry) AS longitude,
+                    COALESCE(
+                        JSON_AGG(
+                            JSON_BUILD_OBJECT(
+                                'id', mi.id,
+                                'name', mi.name,
+                                'description', mi.description,
+                                'price', mi.price
+                            ) ORDER BY mi.name
+                        ) FILTER (WHERE mi.id IS NOT NULL),
+                        '[]'::json
+                    ) AS menu_items
+                FROM branches b
+                LEFT JOIN menu_item mi ON mi.branch_id = b.id
+                WHERE b.restaurant_id = $1
+                GROUP BY b.id
+                ORDER BY b.branch_name ASC
+                `,
+                [restaurantId]
+            );
+        const galleryImages = await task.manyOrNone(
+                `
+                SELECT id, review_id, image_url, created_at
+                FROM gallery_image
+                WHERE restaurant_id = $1
+                ORDER BY created_at DESC
+                `,
+                [restaurantId]
+            );
+
+        return { ...restaurant, cuisines, branches, gallery_images: galleryImages };
+    });
+};
+
 const checkRestaurantManagerService = async (userId, restaurantId) => {
     try {
         const manager = await db.oneOrNone(
@@ -153,4 +219,4 @@ const checkRestaurantManagerByBranchIdService = async (userId, branchId) => {
     }
 };
 
-module.exports = { getUserRestaurantsByUserID, postRestaurantByUserIdAndRestaurantManager, getUnapprovedRestaurantsService, updateRestaurantApprovalService, getRestaurantByRestaurantIdService, checkRestaurantManagerService, checkRestaurantManagerByBranchIdService };
+module.exports = { getUserRestaurantsByUserID, postRestaurantByUserIdAndRestaurantManager, getUnapprovedRestaurantsService, updateRestaurantApprovalService, getRestaurantByRestaurantIdService, getPublicRestaurantByIdService, checkRestaurantManagerService, checkRestaurantManagerByBranchIdService };

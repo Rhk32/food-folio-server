@@ -126,4 +126,4 @@ erDiagram
 
     REVIEW ||--o{ VOUCH : "receives"
     REVIEW ||--o{ COMMENT : "has"
-    REVIEW ||--o| GALLERY_IMAGE : "generates"
+    REVIEW ||--o{ GALLERY_IMAGE : "generates"

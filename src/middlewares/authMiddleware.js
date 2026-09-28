@@ -66,4 +66,24 @@ const authenticateAdmin = async (req, res, next) => {
     }
 };
 
-module.exports = { authenticateUser, authenticateAdmin };
+const optionallyAuthenticateUser = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        req.user = null;
+        return next();
+    }
+
+    try {
+        const token = authHeader.split(' ')[1];
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+        const { payload } = await jwtVerify(token, secret);
+        req.user = payload;
+    } catch (error) {
+        req.user = null;
+    }
+
+    return next();
+};
+
+module.exports = { authenticateUser, authenticateAdmin, optionallyAuthenticateUser };

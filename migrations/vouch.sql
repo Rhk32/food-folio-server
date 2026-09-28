@@ -4,6 +4,7 @@ create table public.vouch (
   review_id uuid not null,
   created_at timestamp with time zone not null default now(),
   constraint vouch_pkey primary key (id),
+  constraint vouch_user_review_key unique (user_id, review_id),
   constraint vouch_review_id_fkey foreign KEY (review_id) references review (id) on update CASCADE on delete CASCADE,
   constraint vouch_user_id_fkey foreign KEY (user_id) references users (id) on update CASCADE on delete CASCADE
 ) TABLESPACE pg_default;

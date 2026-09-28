@@ -6,10 +6,27 @@ const getUserById = async (id) => {
     return await db.oneOrNone(`
         SELECT
             id,
-            password,
             created_at,
             name,
             email,
+            profile_picture_url,
+            current_city,
+            current_country,
+            role,
+            bio
+        FROM users
+        WHERE id = $1
+        `,
+        [id]
+    );
+};
+
+const getPublicUserById = async (id) => {
+    return await db.oneOrNone(`
+        SELECT
+            id,
+            created_at,
+            name,
             profile_picture_url,
             current_city,
             current_country,
@@ -53,7 +70,10 @@ const updateUserProfileInDb = async (userId, fieldsToUpdate) => {
 };
 
 const updatePasswordService = async (userId, oldPassword, newPassword) => {
-    const user = await getUserById(userId);
+    const user = await db.oneOrNone(
+        `SELECT id, password FROM users WHERE id = $1`,
+        [userId]
+    );
 
     if (!user) {
         throw new Error('User not found.');
@@ -72,4 +92,4 @@ const updatePasswordService = async (userId, oldPassword, newPassword) => {
     return { message: 'Password updated successfully.' };
 };
 
-module.exports = { getUserById, updateUserProfileInDb, updatePasswordService };
+module.exports = { getUserById, getPublicUserById, updateUserProfileInDb, updatePasswordService };

@@ -33,10 +33,11 @@ const createUser = async (userData) => {
             $3,
             $4,
             $5,
-            ST_SetSRID(
-                ST_MakePoint($6, $7),
-                4326
-            ),
+            CASE
+                WHEN $6::double precision IS NOT NULL AND $7::double precision IS NOT NULL
+                THEN ST_SetSRID(ST_MakePoint($6, $7), 4326)::geography
+                ELSE NULL
+            END,
             $8
         )
         `,

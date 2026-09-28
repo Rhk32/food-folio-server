@@ -1,4 +1,4 @@
-const { getUserRestaurantsByUserID, postRestaurantByUserIdAndRestaurantManager, getUnapprovedRestaurantsService, updateRestaurantApprovalService, getRestaurantByRestaurantIdService, checkRestaurantManagerService } = require("../services/restaurantService");
+const { getUserRestaurantsByUserID, postRestaurantByUserIdAndRestaurantManager, getUnapprovedRestaurantsService, updateRestaurantApprovalService, getRestaurantByRestaurantIdService, getPublicRestaurantByIdService, checkRestaurantManagerService } = require("../services/restaurantService");
 
 const getUserRestaurants = async (req, res) => {
     try {
@@ -161,4 +161,19 @@ const getRestaurantByRestaurantId = async (req, res) => {
     }
 };
 
-module.exports = { getUserRestaurants, createRestaurant, getUnapprovedRestaurants, updateRestaurantApproval, getRestaurantByRestaurantId };
+const getPublicRestaurantById = async (req, res) => {
+    try {
+        const restaurant = await getPublicRestaurantByIdService(req.params.restaurantId);
+
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        return res.status(200).json({ restaurant });
+    } catch (error) {
+        console.error('Error fetching public restaurant:', error);
+        return res.status(500).json({ message: 'Failed to fetch restaurant' });
+    }
+};
+
+module.exports = { getUserRestaurants, createRestaurant, getUnapprovedRestaurants, updateRestaurantApproval, getRestaurantByRestaurantId, getPublicRestaurantById };

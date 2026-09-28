@@ -10,6 +10,8 @@ const branchRoute = require('./routes/branchRoute');
 const followRoute = require('./routes/followRoute');
 const menuRoute = require('./routes/menuRoute');
 const cuisineRoute = require('./routes/cuisineRoute');
+const searchRoute = require('./routes/searchRoute');
+const reviewRoute = require('./routes/reviewRoute');
 
 const app = express();
 
@@ -42,5 +44,11 @@ app.use('/api/menu', menuRoute);
 
 // cuisine APIs
 app.use('/api/cuisine', cuisineRoute);
+
+// public discovery APIs
+app.use('/api/search', searchRoute);
+
+// review, comment and vouch APIs
+app.use('/api/review', reviewRoute);
 
 module.exports = app;
