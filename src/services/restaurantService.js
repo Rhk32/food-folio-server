@@ -1,4 +1,5 @@
 const { db } = require('../config/dbConfig');
+const { withExplicitTransaction } = require('../config/transaction');
 
 // Fetches all restaurants managed by this userId
 const getUserRestaurantsByUserID = async (userId) => {
@@ -24,9 +25,9 @@ const getUserRestaurantsByUserID = async (userId) => {
 
 const postRestaurantByUserIdAndRestaurantManager = async (userId, name, description, logoUrl) => {
     try {
-        return await db.tx(async (t) => {
+        return await withExplicitTransaction(async (transaction) => {
             // 1. Create the restaurant
-            const restaurant = await t.one(
+            const restaurant = await transaction.one(
                 `
                 INSERT INTO restaurants (name, description, logo_url)
                 VALUES ($1, $2, $3)
@@ -36,7 +37,7 @@ const postRestaurantByUserIdAndRestaurantManager = async (userId, name, descript
             );
 
             // 2. Create the relationship between the user and restaurant
-            await t.none(
+            await transaction.none(
                 `
                 INSERT INTO restaurant_manager (user_id, restaurant_id)
                 VALUES ($1, $2)

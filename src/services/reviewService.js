@@ -1,41 +1,34 @@
 const { db } = require('../config/dbConfig');
+const { withExplicitTransaction } = require('../config/transaction');
 
 const createReviewService = async ({ userId, branchId, rating, content, imageUrls }) => {
-    return db.tx(async (transaction) => {
-        const branch = await transaction.oneOrNone(
+    return withExplicitTransaction(async (transaction) => {
+        const procedureResult = await transaction.one(
             `
-            SELECT b.id, b.restaurant_id
-            FROM branches b
-            INNER JOIN restaurants r ON r.id = b.restaurant_id
-            WHERE b.id = $1 AND r.approval_status = 'approved'
+            CALL public.create_review_with_images(
+                $1::uuid,
+                $2::uuid,
+                $3::integer,
+                $4::text,
+                $5::text[],
+                $6::text,
+                $7::uuid
+            )
             `,
-            [branchId]
+            [userId, branchId, rating, content, imageUrls, null, null]
         );
 
-        if (!branch) return null;
+        if (procedureResult.p_status !== 'created' || !procedureResult.p_review_id) {
+            return null;
+        }
 
         const review = await transaction.one(
             `
-            INSERT INTO review (user_id, branch_id, content, rating)
-            VALUES ($1, $2, $3, $4)
-            RETURNING *
+            SELECT *
+            FROM public.review
+            WHERE id = $1
             `,
-            [userId, branch.id, content, rating]
-        );
-
-        await transaction.none(
-            `
-            INSERT INTO gallery_image (
-                restaurant_id,
-                branch_id,
-                user_id,
-                review_id,
-                image_url
-            )
-            SELECT $1, $2, $3, $4, image_url
-            FROM UNNEST($5::text[]) AS image_url
-            `,
-            [branch.restaurant_id, branch.id, userId, review.id, imageUrls]
+            [procedureResult.p_review_id]
         );
 
         return { ...review, image_urls: imageUrls };
@@ -155,81 +148,49 @@ const createCommentService = async ({ reviewId, userId, content }) => {
 };
 
 const toggleVouchService = async ({ reviewId, userId }) => {
-    return db.tx(async (transaction) => {
-        const review = await transaction.oneOrNone(
+    return withExplicitTransaction(async (transaction) => {
+        const procedureResult = await transaction.one(
             `
-            SELECT r.id
-            FROM review r
-            INNER JOIN branches b ON b.id = r.branch_id
-            INNER JOIN restaurants rest ON rest.id = b.restaurant_id
-            WHERE r.id = $1 AND rest.approval_status = 'approved'
-            FOR UPDATE OF r
+            CALL public.toggle_review_vouch(
+                $1::uuid,
+                $2::uuid,
+                $3::text,
+                $4::boolean,
+                $5::bigint
+            )
             `,
-            [reviewId]
+            [userId, reviewId, null, null, null]
         );
 
-        if (!review) return null;
+        if (procedureResult.p_status !== 'updated') return null;
 
-        const removed = await transaction.oneOrNone(
-            `
-            DELETE FROM vouch
-            WHERE user_id = $1 AND review_id = $2
-            RETURNING id
-            `,
-            [userId, reviewId]
-        );
-
-        let vouched = false;
-
-        if (!removed) {
-            await transaction.none(
-                `INSERT INTO vouch (user_id, review_id) VALUES ($1, $2)`,
-                [userId, reviewId]
-            );
-            vouched = true;
-        }
-
-        const count = await transaction.one(
-            `SELECT COUNT(*)::int AS value FROM vouch WHERE review_id = $1`,
-            [reviewId]
-        );
-
-        await transaction.none(
-            `UPDATE review SET vouch_count = $1 WHERE id = $2`,
-            [count.value, reviewId]
-        );
-
-        return { vouched, vouchCount: count.value };
+        return {
+            vouched: procedureResult.p_vouched,
+            vouchCount: Number(procedureResult.p_vouch_count),
+        };
     });
 };
 
 const deleteReviewByManagerService = async ({ reviewId, userId }) => {
-    return db.tx(async (transaction) => {
-        const deletedReview = await transaction.oneOrNone(
+    return withExplicitTransaction(async (transaction) => {
+        const procedureResult = await transaction.one(
             `
-            DELETE FROM review AS r
-            USING branches AS b, restaurant_manager AS rm
-            WHERE r.id = $1
-              AND b.id = r.branch_id
-              AND rm.restaurant_id = b.restaurant_id
-              AND rm.user_id = $2
-            RETURNING r.id
+            CALL public.delete_review_as_manager(
+                $1::uuid,
+                $2::uuid,
+                $3::text,
+                $4::uuid
+            )
             `,
-            [reviewId, userId]
+            [userId, reviewId, null, null]
         );
 
-        if (deletedReview) {
-            return { status: 'deleted', reviewId: deletedReview.id };
-        }
-
-        const reviewExists = await transaction.oneOrNone(
-            `SELECT 1 FROM review WHERE id = $1`,
-            [reviewId]
-        );
-
-        return reviewExists
-            ? { status: 'forbidden' }
-            : { status: 'not_found' };
+        return {
+            status: procedureResult.p_status,
+            ...(procedureResult.p_deleted_review_id
+                ? { reviewId: procedureResult.p_deleted_review_id }
+                : {}),
+        };
     });
 };
 

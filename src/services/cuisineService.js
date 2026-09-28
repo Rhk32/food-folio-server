@@ -1,4 +1,5 @@
 const { db } = require("../config/dbConfig");
+const { withExplicitTransaction } = require('../config/transaction');
 
 const getCuisinesByRestaurantIdService = async (restaurantId) => {
     try {
@@ -23,8 +24,8 @@ const getCuisinesByRestaurantIdService = async (restaurantId) => {
 
 const postCuisineByRestaurantIdService = async (restaurantId, name) => {
     try {
-        return await db.tx(async (t) => {
-            const cuisine = await t.oneOrNone(
+        return await withExplicitTransaction(async (transaction) => {
+            const cuisine = await transaction.oneOrNone(
                 `
                 SELECT id, name
                 FROM cuisine
@@ -39,7 +40,7 @@ const postCuisineByRestaurantIdService = async (restaurantId, name) => {
                 };
             }
 
-            const restaurantCuisine = await t.oneOrNone(
+            const restaurantCuisine = await transaction.oneOrNone(
                 `
                 INSERT INTO restaurant_cuisine (
                     restaurant_id,
