@@ -203,10 +203,41 @@ const toggleVouchService = async ({ reviewId, userId }) => {
     });
 };
 
+const deleteReviewByManagerService = async ({ reviewId, userId }) => {
+    return db.tx(async (transaction) => {
+        const deletedReview = await transaction.oneOrNone(
+            `
+            DELETE FROM review AS r
+            USING branches AS b, restaurant_manager AS rm
+            WHERE r.id = $1
+              AND b.id = r.branch_id
+              AND rm.restaurant_id = b.restaurant_id
+              AND rm.user_id = $2
+            RETURNING r.id
+            `,
+            [reviewId, userId]
+        );
+
+        if (deletedReview) {
+            return { status: 'deleted', reviewId: deletedReview.id };
+        }
+
+        const reviewExists = await transaction.oneOrNone(
+            `SELECT 1 FROM review WHERE id = $1`,
+            [reviewId]
+        );
+
+        return reviewExists
+            ? { status: 'forbidden' }
+            : { status: 'not_found' };
+    });
+};
+
 module.exports = {
     createReviewService,
     listReviewsService,
     listCommentsService,
     createCommentService,
     toggleVouchService,
+    deleteReviewByManagerService,
 };

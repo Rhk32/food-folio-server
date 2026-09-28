@@ -156,4 +156,37 @@ const toggleVouch = async (req, res) => {
     }
 };
 
-module.exports = { createReview, listReviews, listComments, createComment, toggleVouch };
+const deleteReview = async (req, res) => {
+    try {
+        const { reviewId } = req.params;
+
+        if (!UUID_PATTERN.test(reviewId || '')) {
+            return res.status(400).json({ message: 'Invalid review ID' });
+        }
+
+        const result = await reviewService.deleteReviewByManagerService({
+            reviewId,
+            userId: req.user.userId,
+        });
+
+        if (result.status === 'forbidden') {
+            return res.status(403).json({
+                message: 'You do not manage the restaurant for this review',
+            });
+        }
+
+        if (result.status === 'not_found') {
+            return res.status(404).json({ message: 'Review not found' });
+        }
+
+        return res.status(200).json({
+            message: 'Review deleted permanently',
+            reviewId: result.reviewId,
+        });
+    } catch (error) {
+        console.error('Delete review error:', error);
+        return res.status(500).json({ message: 'Failed to delete review' });
+    }
+};
+
+module.exports = { createReview, listReviews, listComments, createComment, toggleVouch, deleteReview };
