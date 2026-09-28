@@ -4,7 +4,7 @@ const { SignJWT } = require('jose');
 
 const searchUserByEmail = async (email) => {
     return db.oneOrNone(`
-        SELECT id, password
+        SELECT *
         FROM users
         WHERE email = $1
         `,
@@ -62,7 +62,8 @@ const createToken = async (user) => {
     // console.log(secret);
 
     const token = await new SignJWT({
-        userId: user.id
+        userId: user.id,
+        userRole: user.role
     })
     .setProtectedHeader({alg: 'HS256'})
     .setIssuedAt()
